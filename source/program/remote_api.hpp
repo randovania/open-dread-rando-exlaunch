@@ -23,6 +23,7 @@ enum PacketType {
     PACKET_RECEIVED_PICKUPS,
     PACKET_GAME_STATE,
     PACKET_MALFORMED,
+    PACKET_GAME_COMPLETED,
 };
 
 enum ClientInterests {

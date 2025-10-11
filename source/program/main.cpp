@@ -260,6 +260,13 @@ int is_connected(lua_State* L) {
     return 1;
 }
 
+/* Gets called by lua to send whether a game has been beaten since the last reboot */
+int game_completed_send(lua_State* L) {
+    if (RemoteApi::clientSubs.multiWorld) {
+        build_and_send_message(L, PACKET_GAME_COMPLETED);
+    }
+    return 0;
+}
 
 static const luaL_Reg multiworld_lib[] = {
   {"Init", multiworld_init},
@@ -270,6 +277,7 @@ static const luaL_Reg multiworld_lib[] = {
   {"SendReceivedPickups", recv_pickups_send},
   {"SendNewGameState", new_game_state_send},
   {"Connected", is_connected},
+  {"SendGameCompleted", game_completed_send},
   {NULL, NULL}  
 };
 
