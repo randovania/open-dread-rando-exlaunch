@@ -6,6 +6,11 @@
 
 namespace odr::pickups {
 
+	static const luaL_Reg luaLibrary[] = {
+		{"SetItemPopupsEnabled", SetItemPopupsEnabled},
+		{NULL, NULL},
+	};
+
 	static void QueueAsyncPopup(const char* message);
 	static void SoundCallbackHook(void* ptr1, void* ptr2, u32 param1, u32 param2);
 
@@ -108,6 +113,10 @@ void odr::pickups::InstallHooks(const functionOffsets* offsets) {
 	PlayPickupSound::InstallAtOffset(offsets->PlayPickupSound);
     ShowItemPickupMessage::InstallAtOffset(offsets->ShowItemPickupMessage);
 	PlaySoundWithCallback::InstallAtOffset(offsets->PlaySoundWithCallback);
+}
+
+void odr::pickups::InstallLuaLibrary(lua_State* L) {
+	luaL_register(L, "OdrPickups", luaLibrary);
 }
 
 int odr::pickups::SetItemPopupsEnabled(lua_State* L) {

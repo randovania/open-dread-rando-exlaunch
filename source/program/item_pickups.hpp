@@ -15,6 +15,7 @@ namespace odr::pickups {
 	};
 
 	void InstallHooks(const functionOffsets *offsets);
+	void InstallLuaLibrary(lua_State* L);
 	int SetItemPopupsEnabled(lua_State* L);
 
 };
