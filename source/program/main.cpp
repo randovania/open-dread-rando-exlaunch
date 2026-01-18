@@ -6,6 +6,7 @@
 #include "remote_api.hpp"
 #include "lua-5.1.5/src/lua.hpp"
 #include "dread_types.hpp"
+#include "debug_hooks.hpp"
 
 typedef struct
 {
@@ -274,6 +275,11 @@ static const luaL_Reg multiworld_lib[] = {
   {NULL, NULL}
 };
 
+static const luaL_Reg odrdebug_lib[] = {
+    {"SetLoggingEnabled", odr::debug::SetLoggingEnabled},
+    {NULL, NULL},
+};
+
 /* Hook asdf */
 
 HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
@@ -296,6 +302,8 @@ HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
 
         lua_pushinteger(L, RemoteApi::BufferSize);
         lua_setfield(L, -2, "BufferSize");
+
+        luaL_register(L, "OdrDebug", odrdebug_lib);
     }
 };
 
@@ -311,6 +319,7 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->CFilePathStrIdCtor = 0x166C8;
         offsets->luaRegisterGlobals = 0x010aed50;
         offsets->lua_pcall = 0x010a3a80;
+        offsets->LogWarn = 0x1094820;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -318,6 +327,7 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->CFilePathStrIdCtor = 0x16624;
         offsets->luaRegisterGlobals = 0x106ce90;
         offsets->lua_pcall = 0x1061bc0;
+        offsets->LogWarn = 0x1052a70;
     }
 }
 
@@ -334,6 +344,7 @@ extern "C" void exl_main(void* x0, void* x1)
     ForceRomfs::InstallAtOffset(offsets.CFilePathStrIdCtor);
     RomMounted::InstallAtFuncPtr(nn::fs::MountRom);
     LuaRegisterGlobals::InstallAtOffset(offsets.luaRegisterGlobals);
+    odr::debug::InstallHooks(&offsets);
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */

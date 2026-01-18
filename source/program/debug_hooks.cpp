@@ -1,0 +1,42 @@
+#include "debug_hooks.hpp"
+
+namespace odr::debug {
+
+	static bool loggingEnabled = false;
+
+	HOOK_DEFINE_REPLACE(LogWarn) {
+		static int Callback(lua_State* L) {
+			if (!loggingEnabled) {
+				return 0;
+			}
+
+			if (lua_gettop(L) < 2) {
+				svcOutputDebugString("Game.LogWarn: not enough arguments", 34);
+				return 0;
+			}
+
+			lua_Integer arg1 = lua_tointeger(L, 1);
+			const char* msg = lua_tostring(L, 2);
+			static char buffer[256];
+
+			int msgLen = snprintf(buffer, sizeof(buffer), "[LogWarn/%d] %s", (int) arg1, msg);
+
+			svcOutputDebugString(buffer, msgLen);
+			return 0;
+		}
+	};
+
+};
+
+void odr::debug::InstallHooks(functionOffsets* offsets)  {
+	LogWarn::InstallAtOffset(offsets->LogWarn);
+}
+
+int odr::debug::SetLoggingEnabled(lua_State *L) {
+	if (lua_gettop(L) < 1) {
+		return luaL_error(L, "Expected a single boolean argument, but got none");
+	}
+
+	loggingEnabled = lua_toboolean(L, 1);
+	return 0;
+}

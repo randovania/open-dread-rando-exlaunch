@@ -7,4 +7,5 @@ typedef struct {
     ptrdiff_t CFilePathStrIdCtor;
     ptrdiff_t luaRegisterGlobals;
     ptrdiff_t lua_pcall;
+	ptrdiff_t LogWarn;
 } functionOffsets;
