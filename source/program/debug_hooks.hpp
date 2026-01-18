@@ -9,5 +9,6 @@
 
 namespace odr::debug {
 	void InstallHooks(functionOffsets* offsets);
+	void InstallLuaLibrary(lua_State* L);
 	int SetLoggingEnabled(lua_State* L);
 };

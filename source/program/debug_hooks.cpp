@@ -2,6 +2,11 @@
 
 namespace odr::debug {
 
+	static const luaL_Reg luaLibrary[] = {
+		{"SetLoggingEnabled", odr::debug::SetLoggingEnabled},
+		{NULL, NULL},
+	};
+
 	static bool loggingEnabled = false;
 
 	HOOK_DEFINE_REPLACE(LogWarn) {
@@ -30,6 +35,10 @@ namespace odr::debug {
 
 void odr::debug::InstallHooks(functionOffsets* offsets)  {
 	LogWarn::InstallAtOffset(offsets->LogWarn);
+}
+
+void odr::debug::InstallLuaLibrary(lua_State* L) {
+	luaL_register(L, "OdrDebug", luaLibrary);
 }
 
 int odr::debug::SetLoggingEnabled(lua_State *L) {

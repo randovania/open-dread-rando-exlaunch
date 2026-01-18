@@ -275,11 +275,6 @@ static const luaL_Reg multiworld_lib[] = {
   {NULL, NULL}
 };
 
-static const luaL_Reg odrdebug_lib[] = {
-    {"SetLoggingEnabled", odr::debug::SetLoggingEnabled},
-    {NULL, NULL},
-};
-
 /* Hook asdf */
 
 HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
@@ -303,7 +298,7 @@ HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
         lua_pushinteger(L, RemoteApi::BufferSize);
         lua_setfield(L, -2, "BufferSize");
 
-        luaL_register(L, "OdrDebug", odrdebug_lib);
+        odr::debug::InstallLuaLibrary(L);
     }
 };
 
