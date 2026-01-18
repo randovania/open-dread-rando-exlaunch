@@ -20,6 +20,15 @@ typedef struct {
 
     /** The lua_CFunction for `Game.LogWarn`, which is stubbed out in vanilla Dread. */
 	ptrdiff_t LogWarn;
+	ptrdiff_t CallFunctionWithArguments;
+
+	// Pickups
+    ptrdiff_t OnCollectPickup;
+	ptrdiff_t PlayPickupSound;
+    ptrdiff_t ShowItemPickupMessage;
+
+	// Audio
+	ptrdiff_t PlaySoundWithCallback;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;

@@ -7,6 +7,8 @@
 #include "lua-5.1.5/src/lua.hpp"
 #include "dread_types.hpp"
 #include "debug_hooks.hpp"
+#include "lua_helper.hpp"
+#include "item_pickups.hpp"
 
 typedef struct
 {
@@ -275,6 +277,11 @@ static const luaL_Reg multiworld_lib[] = {
   {NULL, NULL}
 };
 
+static const luaL_Reg odrpickups_lib[] = {
+    {"SetItemPopupsEnabled", odr::pickups::SetItemPopupsEnabled},
+    {NULL, NULL},
+};
+
 /* Hook asdf */
 
 HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
@@ -299,6 +306,7 @@ HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
         lua_setfield(L, -2, "BufferSize");
 
         odr::debug::InstallLuaLibrary(L);
+        luaL_register(L, "OdrPickups", odrpickups_lib);
     }
 };
 
@@ -315,6 +323,15 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->luaRegisterGlobals = 0x010aed50;
         offsets->lua_pcall = 0x010a3a80;
         offsets->LogWarn = 0x1094820;
+        offsets->CallFunctionWithArguments = 0x790; // wow that's early
+
+        // Pickups
+        offsets->OnCollectPickup = 0x9d0e28;
+        offsets->PlayPickupSound = 0x9d16c4;
+        offsets->ShowItemPickupMessage = 0xb5fd9c;
+
+        // Audio
+        offsets->PlaySoundWithCallback = 0xfd90d8;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -323,6 +340,15 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->luaRegisterGlobals = 0x106ce90;
         offsets->lua_pcall = 0x1061bc0;
         offsets->LogWarn = 0x1052a70;
+        offsets->CallFunctionWithArguments = 0x790;
+
+        // Pickups
+        offsets->OnCollectPickup = 0x9ce5c8;
+        offsets->PlayPickupSound = 0x9cee64;
+        offsets->ShowItemPickupMessage = 0xb5395c;
+
+        // Audio
+        offsets->PlaySoundWithCallback = 0xf975f8;
     }
 }
 
@@ -340,6 +366,8 @@ extern "C" void exl_main(void* x0, void* x1)
     RomMounted::InstallAtFuncPtr(nn::fs::MountRom);
     LuaRegisterGlobals::InstallAtOffset(offsets.luaRegisterGlobals);
     odr::debug::InstallHooks(&offsets);
+    odr::lua::InstallHooks(&offsets);
+    odr::pickups::InstallHooks(&offsets);
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */
