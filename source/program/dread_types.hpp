@@ -21,3 +21,26 @@ typedef struct {
     /** The lua_CFunction for `Game.LogWarn`, which is stubbed out in vanilla Dread. */
 	ptrdiff_t LogWarn;
 } functionOffsets;
+
+typedef unsigned long long crc64_t;
+
+struct CRntString {
+	char* str;
+	int length;
+	void* allocator;
+	bool usesMainAllocator;
+	crc64_t hash;
+	bool isEmpty;
+};
+
+struct CStringInstance {
+	void* stringPoolEntry;
+	unsigned int uses;
+	CRntString string;
+	bool storeInPool;
+	unsigned int unknown;
+};
+
+struct CStrId {
+	CStringInstance *value;
+};
