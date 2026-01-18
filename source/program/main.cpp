@@ -361,7 +361,7 @@ extern "C" void exl_main(void* x0, void* x1)
     RomMounted::InstallAtFuncPtr(nn::fs::MountRom);
     LuaRegisterGlobals::InstallAtOffset(offsets.luaRegisterGlobals);
     odr::debug::InstallHooks(&offsets);
-    odr::lua::InstallHooks(&offsets);
+    odr::lua::InstallFunctions(&offsets);
     odr::pickups::InstallHooks(&offsets);
 
     /* Alternative install funcs: */

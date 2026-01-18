@@ -10,7 +10,7 @@ namespace odr::lua {
 
 	typedef bool (*CallFunctionWithArgumentsFn)(const char *functionName, const char *argumentTypes, ...);
 
-	void InstallHooks(functionOffsets* offsets);
+	void InstallFunctions(functionOffsets* offsets);
 	CallFunctionWithArgumentsFn GetCallFunctionWithArgumentsPtr();
 
 	template <typename ...Params>

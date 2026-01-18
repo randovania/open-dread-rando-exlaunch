@@ -7,7 +7,7 @@ namespace odr::lua {
 
 };
 
-void odr::lua::InstallHooks(functionOffsets* offsets)  {
+void odr::lua::InstallFunctions(functionOffsets* offsets)  {
 	callFunctionWithArgumentsPtr = (bool(*)(const char*, const char*, ...)) exl::util::modules::GetTargetOffset(offsets->CallFunctionWithArguments);
 }
 
