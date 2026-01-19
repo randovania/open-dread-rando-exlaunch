@@ -15,9 +15,10 @@ namespace odr::debug {
 				return 0;
 			}
 
-			if (lua_gettop(L) < 2) {
-				svcOutputDebugString("Game.LogWarn: not enough arguments", 34);
-				return 0;
+			int nargs = lua_gettop(L);
+
+			if (nargs < 2) {
+				return luaL_error(L, "not enough arguments (expected 2, got %d)", nargs);
 			}
 
 			lua_Integer arg1 = lua_tointeger(L, 1);
