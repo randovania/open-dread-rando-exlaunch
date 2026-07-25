@@ -9,6 +9,21 @@ typedef struct {
     /** Calculates the CRC64 hash of a string */
     ptrdiff_t crc64;
 
+	/** Function that creates a CStrId.  */
+	ptrdiff_t GetCStrId;
+
+	/** Function that releases a CStringInstance and frees it if it is not referenced. */
+	ptrdiff_t DiscardStringInstance;
+
+	/** Singleton that manages CStrId */
+	ptrdiff_t StringPoolPtr;
+
+	/** Singleton that stores all reflection data */
+	ptrdiff_t ReflectionManagerPtr;
+
+	/** Function that gets a CClass from its hashed name */
+	ptrdiff_t GetCClassPtr;
+
     /** Constructor for `CFilePathStrId` class used when the game loads files */
     ptrdiff_t CFilePathStrIdCtor;
 
@@ -41,11 +56,20 @@ typedef struct {
 	/** A large array of common CStrId in alpha order */
 	ptrdiff_t StaticStringBank;
 
-	/** Finds a StringInstance or creates one */
-	ptrdiff_t FindOrCreateStringInstance;
+	/** Function that generates all CClasses. Can be hooked to access class data. */
+	ptrdiff_t GenerateReflection;
+
+	/** Function that registers a variable to a CClass. Usually called in fields() function. */
+	ptrdiff_t RegisterVariable;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;
+
+// TODO implement CClass
+typedef ptrdiff_t CClass;
+
+// TODO implement ReflectionManager
+typedef ptrdiff_t ReflectionManager;
 
 struct CRntString {
 	char* str;
@@ -66,4 +90,11 @@ struct CStringInstance {
 
 struct CStrId {
 	CStringInstance *value;
+};
+
+// TODO implement fully; this is just to provide access to nullStr for CStrId-related purposes.
+struct SStringPool {
+	void* vtable;
+	ptrdiff_t unk1;
+	CStringInstance *nullStr;
 };

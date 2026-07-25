@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.hpp"
+#include "../common.hpp"
 
 #define EXL_MODULE_NAME "exlaunch"
 

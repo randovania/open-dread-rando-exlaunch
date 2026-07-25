@@ -7,7 +7,7 @@ namespace odr::debug {
 		{NULL, NULL},
 	};
 
-	static bool loggingEnabled = false;
+	static bool loggingEnabled = true;
 
 	HOOK_DEFINE_REPLACE(LogWarn) {
 		static int Callback(lua_State* L) {
