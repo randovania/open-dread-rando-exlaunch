@@ -43,6 +43,12 @@ typedef struct {
 
 	/** Finds a StringInstance or creates one */
 	ptrdiff_t FindOrCreateStringInstance;
+
+	/** Returns the game's minimap manager. */
+	ptrdiff_t GetMapManager;
+
+	/** Marks an EMapTutoType as shown and saves it to Blackboard MINIMAP:DoneMapTutos. */
+	ptrdiff_t AddDoneMapTuto;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;
