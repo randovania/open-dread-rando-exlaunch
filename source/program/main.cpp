@@ -219,6 +219,17 @@ void getVersionOffsets(functionOffsets *offsets)
         // Map
         offsets->GetMapManager = 0xe8d8b0;
         offsets->AddDoneMapTuto = 0xea6314;
+
+        // Blackboard
+        offsets->GameGlobalSlot = 0x1cba088;
+        offsets->HashString = 0x3d4;
+        offsets->BlackboardGetOrCreateSection = 0x10472e0;
+        offsets->BlackboardSectionGetVector3D = 0x395d3c;
+        offsets->BlackboardSectionSetProp = 0x332c80;
+        offsets->BlackboardBuildPropKey = 0xae9a10;
+        offsets->BlackboardKeyPrefixSlot = 0x1cba090;
+        offsets->StringPoolSlot = 0x1cba068;
+        offsets->PropLastPlayerPosSlot = 0x1d09dc8;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -244,6 +255,17 @@ void getVersionOffsets(functionOffsets *offsets)
         // Map
         offsets->GetMapManager = 0xe4f410;
         offsets->AddDoneMapTuto = 0xe67dc8;
+
+        // Blackboard
+        offsets->GameGlobalSlot = 0x1c626b8;
+        offsets->HashString = 0x3d4;
+        offsets->BlackboardGetOrCreateSection = 0x10057a0;
+        offsets->BlackboardSectionGetVector3D = 0x3954bc;
+        offsets->BlackboardSectionSetProp = 0x332544;
+        offsets->BlackboardBuildPropKey = 0xae6c10;
+        offsets->BlackboardKeyPrefixSlot = 0x1c626c0;
+        offsets->StringPoolSlot = 0x1c62698;
+        offsets->PropLastPlayerPosSlot = 0x1cb22b0;
     }
 }
 

@@ -49,6 +49,26 @@ typedef struct {
 
 	/** Marks an EMapTutoType as shown and saves it to Blackboard MINIMAP:DoneMapTutos. */
 	ptrdiff_t AddDoneMapTuto;
+
+	// Blackboard
+	/** GOT slot that points to the global holding the game object pointer. */
+	ptrdiff_t GameGlobalSlot;
+	/** Builds a CStrId from a C string. */
+	ptrdiff_t HashString;
+	/** Returns the Blackboard section with the given name, creating it if needed. */
+	ptrdiff_t BlackboardGetOrCreateSection;
+	/** Reads a CVector3D property from a section; returns whether it exists. */
+	ptrdiff_t BlackboardSectionGetVector3D;
+	/** Writes a typed property into a section. */
+	ptrdiff_t BlackboardSectionSetProp;
+	/** Builds a property descriptor's full key ("[prefix:]GROUP:name") on first use. */
+	ptrdiff_t BlackboardBuildPropKey;
+	/** GOT slot of the global key prefix passed to BlackboardBuildPropKey. */
+	ptrdiff_t BlackboardKeyPrefixSlot;
+	/** GOT slot of the string pool (its address + 0x10 is the empty CStrId). */
+	ptrdiff_t StringPoolSlot;
+	/** GOT slot of the MINIMAP:LastPlayerPos property descriptor. */
+	ptrdiff_t PropLastPlayerPosSlot;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;

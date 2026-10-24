@@ -19,4 +19,11 @@ namespace odr::map {
 	/** OdrMap.MarkMapTutoDone(type) -> bool. Marks a map tutorial (EMapTutoType) as already shown. */
 	int MarkMapTutoDone(lua_State* L);
 
+	/**
+	 * OdrMap.MarkAreaVisited(scenario[, x, y, z]) -> bool. Saves MINIMAP:LastPlayerPos for the area,
+	 * which makes it selectable on the world map.
+	 * With a position it is always written, otherwise (0,0,0) is written only if the proeprty is missing.
+	 */
+	int MarkAreaVisited(lua_State* L);
+
 };
