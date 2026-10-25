@@ -69,6 +69,12 @@ typedef struct {
 	ptrdiff_t StringPoolSlot;
 	/** GOT slot of the MINIMAP:LastPlayerPos property descriptor. */
 	ptrdiff_t PropLastPlayerPosSlot;
+
+	// Teleporter
+	/** Global teleport: adds each used teleporter's partner to the map manager's icon table. void(). */
+	ptrdiff_t SyncTeleporterPairs;
+	/** Grows a map icon table to the given capacity. void(table, newCapacity). */
+	ptrdiff_t GrowMapIconTable;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;

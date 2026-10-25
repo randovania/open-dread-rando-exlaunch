@@ -12,6 +12,18 @@ namespace odr::map {
 	static GetMapManagerFn getMapManager = NULL;
 	static AddDoneMapTutoFn addDoneMapTuto = NULL;
 
+	// Map icon table (saved as TGlobalMapIcons). Two levels:
+	// - the table itself: one entry per area (at most 9), grown by GrowMapIconTable
+	// - inside each area entry: a list of that area's icons, e.g. its teleporters
+	typedef void (*GrowMapIconTableFn)(void* table, u32 newCapacity);
+	static GrowMapIconTableFn growMapIconTable = NULL;
+
+	// Offsets inside the map manager
+	static const ptrdiff_t MAPMGR_ICON_TABLE = 0xd642a0;
+	static const ptrdiff_t ICON_TABLE_CAPACITY = 0x14;
+	// Minimum table capacity: one entry per area, and there are 9 areas. One more for safety.
+	static const u32 ICON_TABLE_MIN_CAPACITY = 10;
+
 	// Blackboard
 	struct STypedValue {
 		void* type;
@@ -65,6 +77,30 @@ namespace odr::map {
 		return getMapManager != NULL ? getMapManager() : NULL;
 	}
 
+	/**
+	 * Fixes a crash when using a teleporter with global teleport unlocked.
+	 *
+	 * The game goes through the table area by area and adds each used teleporter's partner to the
+	 * partner's area. Example: table full with [Itorash, Hanubia, Ferenia]; at Ferenia it adds Burenia
+	 * (never visited) -> table moves to new memory -> the loop keeps reading the freed old memory -> crash.
+	 * The base game never hits this, since all teleporter areas are visited before global teleport unlocks.
+	 *
+	 * Fix: make room first, so adding an area never moves the table.
+	 */
+	HOOK_DEFINE_TRAMPOLINE(SyncTeleporterPairs) {
+		static void Callback() {
+			char* mapManager = (char*) GetMapManagerOrNull();
+			if (mapManager != NULL) {
+				char* table = mapManager + MAPMGR_ICON_TABLE;
+				u32 capacity = *(u32*)(table + ICON_TABLE_CAPACITY);
+				if (capacity < ICON_TABLE_MIN_CAPACITY) {
+					growMapIconTable(table, ICON_TABLE_MIN_CAPACITY);
+				}
+			}
+			Orig();
+		}
+	};
+
 	/** Returns the descriptor's full key, building it the same way the game does if it is still empty. */
 	static const CStrId* GetPropKey(SPropDescriptor* prop) {
 		void* emptyString = **stringPoolSlot + 0x10;
@@ -82,6 +118,10 @@ void odr::map::InstallFunctions(const functionOffsets* offsets) {
 	}
 	if (offsets->AddDoneMapTuto != 0) {
 		addDoneMapTuto = Resolve<AddDoneMapTutoFn>(offsets->AddDoneMapTuto);
+	}
+	if (getMapManager != NULL && offsets->SyncTeleporterPairs != 0 && offsets->GrowMapIconTable != 0) {
+		growMapIconTable = Resolve<GrowMapIconTableFn>(offsets->GrowMapIconTable);
+		SyncTeleporterPairs::InstallAtOffset(offsets->SyncTeleporterPairs);
 	}
 
 	bool blackboardKnown = offsets->GameGlobalSlot != 0 && offsets->StringPoolSlot != 0

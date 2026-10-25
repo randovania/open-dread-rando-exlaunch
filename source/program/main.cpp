@@ -230,6 +230,10 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->BlackboardKeyPrefixSlot = 0x1cba090;
         offsets->StringPoolSlot = 0x1cba068;
         offsets->PropLastPlayerPosSlot = 0x1d09dc8;
+
+        // Teleporter
+        offsets->SyncTeleporterPairs = 0xb422a8;
+        offsets->GrowMapIconTable = 0xb48944;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -266,6 +270,10 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->BlackboardKeyPrefixSlot = 0x1c626c0;
         offsets->StringPoolSlot = 0x1c62698;
         offsets->PropLastPlayerPosSlot = 0x1cb22b0;
+
+        // Teleporter
+        offsets->SyncTeleporterPairs = 0xb3b7e8;
+        offsets->GrowMapIconTable = 0xb41e70;
     }
 }
 
