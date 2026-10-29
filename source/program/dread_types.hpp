@@ -38,6 +38,12 @@ typedef struct {
 	/** Plays a sound effect with specific flags and a callback function that is invoked when the sound finishes playing. */
 	ptrdiff_t PlaySoundWithCallback;
 
+	/** GOT slot that points to the global holding the sound manager. */
+	ptrdiff_t SoundManagerSlot;
+
+	/** Pauses or resumes whole sound channels by bit mask. void(soundManager, pause, &channelMask). */
+	ptrdiff_t PauseSoundChannels;
+
 	/** A large array of common CStrId in alpha order */
 	ptrdiff_t StaticStringBank;
 

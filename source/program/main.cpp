@@ -10,6 +10,7 @@
 #include "item_pickups.hpp"
 #include "romfs.hpp"
 #include "map.hpp"
+#include "sound.hpp"
 
 /* The main executable's pcall, so we get proper error handling. */
 int (*exefs_lua_pcall) (lua_State *L, int nargs, int nresults, int errfunc) = NULL;
@@ -186,6 +187,7 @@ HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
         odr::debug::InstallLuaLibrary(L);
         odr::pickups::InstallLuaLibrary(L);
         odr::map::InstallLuaLibrary(L);
+        odr::sound::InstallLuaLibrary(L);
     }
 };
 
@@ -211,6 +213,8 @@ void getVersionOffsets(functionOffsets *offsets)
 
         // Audio
         offsets->PlaySoundWithCallback = 0xfd90d8;
+        offsets->SoundManagerSlot = 0x1cbafd0;
+        offsets->PauseSoundChannels = 0x108464;
 
         // String bank
         offsets->StaticStringBank = 0x1d552d0;
@@ -251,6 +255,8 @@ void getVersionOffsets(functionOffsets *offsets)
 
         // Audio
         offsets->PlaySoundWithCallback = 0xf975f8;
+        offsets->SoundManagerSlot = 0x1c635f8;
+        offsets->PauseSoundChannels = 0x108244;
 
         // String bank
         offsets->StaticStringBank = 0x1cfc2d0;
@@ -293,6 +299,7 @@ extern "C" void exl_main(void* x0, void* x1)
     odr::pickups::InstallHooks(&offsets);
     odr::romfs::InstallHooks(&offsets);
     odr::map::InstallFunctions(&offsets);
+    odr::sound::InstallFunctions(&offsets);
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */
