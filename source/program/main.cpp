@@ -11,6 +11,7 @@
 #include "romfs.hpp"
 #include "map.hpp"
 #include "sound.hpp"
+#include "spin_attack.hpp"
 #include "game_functions.hpp"
 #include "offsets.hpp"
 
@@ -227,6 +228,7 @@ extern "C" void exl_main(void* x0, void* x1)
     odr::romfs::InstallHooks();
     odr::map::InstallFunctions();
     odr::sound::InstallFunctions();
+    odr::spin_attack::InstallHooks();
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */
