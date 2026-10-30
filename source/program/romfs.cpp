@@ -3,15 +3,15 @@
 #include <nn.hpp>
 #include "lib.hpp"
 #include "cJSON.h"
+#include "game_functions.hpp"
+
+using odr::game::crc64;
 
 typedef struct
 {
     u64 crc;
     char const *replacement;
 } stringList;
-
-/* Function ptr to dread's crc function. */
-u64 (*crc64)(char const *str, u64 size) = NULL;
 
 stringList *g_stringList = NULL;
 size_t g_stringListSize = 0;
@@ -193,7 +193,6 @@ HOOK_DEFINE_TRAMPOLINE(RomMounted) {
 void odr::romfs::InstallHooks(functionOffsets* offsets) {
     RomMounted::InstallAtFuncPtr(nn::fs::MountRom);
     ForceRomfs::InstallAtOffset(offsets->CFilePathStrIdCtor);
-    crc64 = (u64 (*)(char const *, u64))exl::util::modules::GetTargetOffset(offsets->crc64);
-    create_string_instance = (void (*)(CStrId* value, const char* str, uint len, u64 crc, bool storeInPool)) exl::util::modules::GetTargetOffset(offsets->FindOrCreateStringInstance);
-    g_stringBank = (CStrId*)exl::util::modules::GetTargetOffset(offsets->StaticStringBank);
+    create_string_instance = odr::game::Resolve<decltype(create_string_instance)>(offsets->FindOrCreateStringInstance);
+    g_stringBank = odr::game::Resolve<CStrId*>(offsets->StaticStringBank);
 }

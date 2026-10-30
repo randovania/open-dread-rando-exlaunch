@@ -11,6 +11,8 @@
 #include "romfs.hpp"
 #include "map.hpp"
 #include "sound.hpp"
+#include "spin_attack.hpp"
+#include "game_functions.hpp"
 
 /* The main executable's pcall, so we get proper error handling. */
 int (*exefs_lua_pcall) (lua_State *L, int nargs, int nresults, int errfunc) = NULL;
@@ -238,6 +240,15 @@ void getVersionOffsets(functionOffsets *offsets)
         // Teleporter
         offsets->SyncTeleporterPairs = 0xb422a8;
         offsets->GrowMapIconTable = 0xb48944;
+
+        // Spin attack
+        offsets->StartSpinAttack = 0x859d0c;
+        offsets->GetSpinAttackGunName = 0x840828;
+        offsets->GetCurrentGunName = 0x8407fc;
+        offsets->PlayFx = 0xd7c828;
+        offsets->SpinAttackFxWideSlot = 0x1cf6e40;
+        offsets->SpinAttackFxPlasmaSlot = 0x1cf6e38;
+        offsets->SpinAttackFxWaveSlot = 0x1cf6e48;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -280,6 +291,15 @@ void getVersionOffsets(functionOffsets *offsets)
         // Teleporter
         offsets->SyncTeleporterPairs = 0xb3b7e8;
         offsets->GrowMapIconTable = 0xb41e70;
+
+        // Spin attack
+        offsets->StartSpinAttack = 0x857b9c;
+        offsets->GetSpinAttackGunName = 0x83e748;
+        offsets->GetCurrentGunName = 0x83e71c;
+        offsets->PlayFx = 0xd69d28;
+        offsets->SpinAttackFxWideSlot = 0x1c9f410;
+        offsets->SpinAttackFxPlasmaSlot = 0x1c9f408;
+        offsets->SpinAttackFxWaveSlot = 0x1c9f418;
     }
 }
 
@@ -290,6 +310,7 @@ extern "C" void exl_main(void* x0, void* x1)
     exl::hook::Initialize();
 
     getVersionOffsets(&offsets);
+    odr::game::InstallFunctions(&offsets);
 
     /* Install the hook at the provided function pointer. Function type is checked against the callback function. */
     /* Hook functions we care about */
@@ -300,13 +321,13 @@ extern "C" void exl_main(void* x0, void* x1)
     odr::romfs::InstallHooks(&offsets);
     odr::map::InstallFunctions(&offsets);
     odr::sound::InstallFunctions(&offsets);
+    odr::spin_attack::InstallHooks(&offsets);
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */
     /* InstallAtOffset takes an offset into the main module. */
 
-    /* Get the address of dread's crc64 function */
-    exefs_lua_pcall = (int (*) (lua_State *L, int nargs, int nresults, int errfunc)) exl::util::modules::GetTargetOffset(offsets.lua_pcall);
+    exefs_lua_pcall = odr::game::Resolve<decltype(exefs_lua_pcall)>(offsets.lua_pcall);
 }
 
 extern "C" NORETURN void exl_exception_entry()
