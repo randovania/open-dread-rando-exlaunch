@@ -1,9 +1,12 @@
 #include "map.hpp"
 
 #include "lib.hpp"
-#include "lib/util/modules.hpp"
+#include "game_functions.hpp"
 
 namespace odr::map {
+
+	using game::Resolve;
+	using game::hashString;
 
 	// Minimap manager
 	typedef void* (*GetMapManagerFn)();
@@ -40,7 +43,6 @@ namespace odr::map {
 		void* type;      // reflection type of the value
 	};
 
-	typedef void (*HashStringFn)(CStrId* out, const char* str, bool addToPool);
 	typedef void* (*GetOrCreateSectionFn)(void* blackboard, const CStrId* section);
 	typedef bool (*SectionGetVector3DFn)(void* section, const CStrId* key, float* out);
 	typedef void (*SectionSetPropFn)(void* section, const CStrId* key, STypedValue* value);
@@ -52,7 +54,6 @@ namespace odr::map {
 	static CStrId** keyPrefixSlot = NULL;
 	static SPropDescriptor** propLastPlayerPosSlot = NULL;
 
-	static HashStringFn hashString = NULL;
 	static GetOrCreateSectionFn getOrCreateSection = NULL;
 	static SectionGetVector3DFn sectionGetVector3D = NULL;
 	static SectionSetPropFn sectionSetProp = NULL;
@@ -67,11 +68,6 @@ namespace odr::map {
 		{"MarkAreaVisited", MarkAreaVisited},
 		{NULL, NULL},
 	};
-
-	template<typename T>
-	static T Resolve(ptrdiff_t offset) {
-		return (T) exl::util::modules::GetTargetOffset(offset);
-	}
 
 	static void* GetMapManagerOrNull() {
 		return getMapManager != NULL ? getMapManager() : NULL;
@@ -134,7 +130,6 @@ void odr::map::InstallFunctions(const functionOffsets* offsets) {
 		stringPoolSlot = Resolve<char***>(offsets->StringPoolSlot);
 		keyPrefixSlot = Resolve<CStrId**>(offsets->BlackboardKeyPrefixSlot);
 		propLastPlayerPosSlot = Resolve<SPropDescriptor**>(offsets->PropLastPlayerPosSlot);
-		hashString = Resolve<HashStringFn>(offsets->HashString);
 		getOrCreateSection = Resolve<GetOrCreateSectionFn>(offsets->BlackboardGetOrCreateSection);
 		sectionGetVector3D = Resolve<SectionGetVector3DFn>(offsets->BlackboardSectionGetVector3D);
 		sectionSetProp = Resolve<SectionSetPropFn>(offsets->BlackboardSectionSetProp);

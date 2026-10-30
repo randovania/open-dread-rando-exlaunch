@@ -81,6 +81,20 @@ typedef struct {
 	ptrdiff_t SyncTeleporterPairs;
 	/** Grows a map icon table to the given capacity. void(table, newCapacity). */
 	ptrdiff_t GrowMapIconTable;
+
+	// Charged spin-jump attack
+	/** Starts the spin-jump attack and plays its effect for the current beam. void(gunComponent). */
+	ptrdiff_t StartSpinAttack;
+	/** Returns the current beam's name. Only used to stop the spin-jump effect. CStrId*(gunComponent). */
+	ptrdiff_t GetSpinAttackGunName;
+	/** Returns the current beam's name. CStrId*(gunComponent). */
+	ptrdiff_t GetCurrentGunName;
+	/** Plays an FX on an actor. void(actor, &fxName, unknown). */
+	ptrdiff_t PlayFx;
+	/** GOT slots of the spin-jump FX names for PowerBeam/WideBeam, PlasmaBeam and WaveBeam. */
+	ptrdiff_t SpinAttackFxWideSlot;
+	ptrdiff_t SpinAttackFxPlasmaSlot;
+	ptrdiff_t SpinAttackFxWaveSlot;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;

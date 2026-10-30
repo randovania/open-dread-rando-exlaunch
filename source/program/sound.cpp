@@ -1,9 +1,11 @@
 #include "sound.hpp"
 
 #include "lib.hpp"
-#include "lib/util/modules.hpp"
+#include "game_functions.hpp"
 
 namespace odr::sound {
+
+	using game::Resolve;
 
 	// The game's channel pause: void(soundManager, pause, &channelMask). Also used by Game.PauseSounds.
 	typedef void (*PauseChannelsFn)(void* soundManager, u32 pause, u32* channelMask);
@@ -16,11 +18,6 @@ namespace odr::sound {
 		{"PauseChannel", PauseChannel},
 		{NULL, NULL},
 	};
-
-	template<typename T>
-	static T Resolve(ptrdiff_t offset) {
-		return (T) exl::util::modules::GetTargetOffset(offset);
-	}
 
 };
 
