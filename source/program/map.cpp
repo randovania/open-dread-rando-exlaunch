@@ -6,6 +6,7 @@
 namespace odr::map {
 
 	using game::Resolve;
+	using game::Field;
 	using game::hashString;
 
 	// Minimap manager
@@ -88,7 +89,7 @@ namespace odr::map {
 			char* mapManager = (char*) GetMapManagerOrNull();
 			if (mapManager != NULL) {
 				char* table = mapManager + MAPMGR_ICON_TABLE;
-				u32 capacity = *(u32*)(table + ICON_TABLE_CAPACITY);
+				u32 capacity = Field<u32>(table, ICON_TABLE_CAPACITY);
 				if (capacity < ICON_TABLE_MIN_CAPACITY) {
 					growMapIconTable(table, ICON_TABLE_MIN_CAPACITY);
 				}
@@ -181,7 +182,7 @@ int odr::map::MarkAreaVisited(lua_State* L) {
 	char* game = (char*) **gameSlot;
 
 	// The game skips Blackboard writes while this flag is set
-	if (*(bool*)(game + GAME_BLACKBOARD_LOCKED)) {
+	if (Field<bool>(game, GAME_BLACKBOARD_LOCKED)) {
 		lua_pushboolean(L, false);
 		return 1;
 	}

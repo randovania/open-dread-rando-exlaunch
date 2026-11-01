@@ -95,6 +95,14 @@ typedef struct {
 	ptrdiff_t SpinAttackFxWideSlot;
 	ptrdiff_t SpinAttackFxPlasmaSlot;
 	ptrdiff_t SpinAttackFxWaveSlot;
+
+	// Suit change
+	/** Changes the model of a model updater component (sModelAlias setter). bool(updater, modelEntry). */
+	ptrdiff_t ChangeModel;
+	/** Adds a model to a material effect. void(effect, renderModel, matchMaterials). */
+	ptrdiff_t AttachMaterialFx;
+	/** Removes a model's current instance from a material effect. void(effect, renderModel). */
+	ptrdiff_t DetachMaterialFx;
 } functionOffsets;
 
 typedef unsigned long long crc64_t;

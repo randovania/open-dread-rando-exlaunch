@@ -12,6 +12,7 @@
 #include "map.hpp"
 #include "sound.hpp"
 #include "spin_attack.hpp"
+#include "suit_change.hpp"
 #include "game_functions.hpp"
 
 /* The main executable's pcall, so we get proper error handling. */
@@ -249,6 +250,11 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->SpinAttackFxWideSlot = 0x1cf6e40;
         offsets->SpinAttackFxPlasmaSlot = 0x1cf6e38;
         offsets->SpinAttackFxWaveSlot = 0x1cf6e48;
+
+        // Suit change
+        offsets->ChangeModel = 0x938fcc;
+        offsets->AttachMaterialFx = 0x1457fc;
+        offsets->DetachMaterialFx = 0x14580c;
     }
     else /* 1.0.0 - 2.0.0 */
     {
@@ -300,6 +306,11 @@ void getVersionOffsets(functionOffsets *offsets)
         offsets->SpinAttackFxWideSlot = 0x1c9f410;
         offsets->SpinAttackFxPlasmaSlot = 0x1c9f408;
         offsets->SpinAttackFxWaveSlot = 0x1c9f418;
+
+        // Suit change
+        offsets->ChangeModel = 0x93677c;
+        offsets->AttachMaterialFx = 0x1455cc;
+        offsets->DetachMaterialFx = 0x1455dc;
     }
 }
 
@@ -322,6 +333,7 @@ extern "C" void exl_main(void* x0, void* x1)
     odr::map::InstallFunctions(&offsets);
     odr::sound::InstallFunctions(&offsets);
     odr::spin_attack::InstallHooks(&offsets);
+    odr::suit_change::InstallHooks(&offsets);
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */

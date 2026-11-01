@@ -8,6 +8,7 @@
 namespace odr::spin_attack {
 
 	using game::Resolve;
+	using game::Field;
 	using game::crc64;
 	using game::hashString;
 
@@ -77,7 +78,7 @@ namespace odr::spin_attack {
 		static void Callback(void* gunComponent) {
 			Orig(gunComponent);
 
-			void* actor = *(void**)((char*) gunComponent + GUN_COMPONENT_ACTOR);
+			void* actor = Field<void*>(gunComponent, GUN_COMPONENT_ACTOR);
 			if (actor == NULL) {
 				return;
 			}

@@ -13,6 +13,12 @@ namespace odr::game {
 		return (T) exl::util::modules::GetTargetOffset(offset);
 	}
 
+	/** Reads the value of type T stored at the given byte offset inside a game object. */
+	template<typename T>
+	inline T Field(void* object, ptrdiff_t offset) {
+		return *(T*)((char*) object + offset);
+	}
+
 	/** Calculates the CRC64 hash of a string. */
 	typedef u64 (*Crc64Fn)(const char* str, u64 size);
 	/** Builds a CStrId from a C string. */
