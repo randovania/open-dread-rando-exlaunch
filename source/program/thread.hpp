@@ -37,13 +37,13 @@ namespace shimmer::util {
             return Create(function, argument, nn::os::DefaultThreadPriority);
         }
         inline Result Create(nn::os::ThreadFunction function, s32 priority, s32 ideal_core) {
-            return Create(function, (void*) NULL, priority, ideal_core);
+            return Create(function, nullptr, priority, ideal_core);
         }
         inline Result Create(nn::os::ThreadFunction function, s32 priority) {
-            return Create(function, (void*) NULL, priority);
+            return Create(function, nullptr, priority);
         }
         inline Result Create(nn::os::ThreadFunction function) {
-            return Create(function, (void*) NULL);
+            return Create(function, nullptr);
         }
         inline void Destroy() {
             nn::os::DestroyThread(&m_Thread);

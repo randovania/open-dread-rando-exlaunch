@@ -3,23 +3,51 @@
 #include <nn.hpp>
 #include "lib.hpp"
 #include "cJSON.h"
+#include "game_functions.hpp"
+#include "offsets.hpp"
 
-typedef struct
+using odr::game::crc64;
+
+namespace odr::romfs {
+
+    struct Offsets {
+        /** Constructor for `CFilePathStrId` class used when the game loads files */
+        ptrdiff_t CFilePathStrIdCtor;
+        /** Finds a StringInstance or creates one */
+        ptrdiff_t FindOrCreateStringInstance;
+        /** A large array of common CStrId in alpha order */
+        ptrdiff_t StaticStringBank;
+    };
+
+    static constexpr offsets::Versioned<Offsets> OFFSETS = {
+        .v1_0_0 = {
+            .CFilePathStrIdCtor = 0x16624,
+            .FindOrCreateStringInstance = 0x4063c,
+            .StaticStringBank = 0x1cfc2d0,
+        },
+        .v2_1_0 = {
+            .CFilePathStrIdCtor = 0x166C8,
+            .FindOrCreateStringInstance = 0x406dc,
+            .StaticStringBank = 0x1d552d0,
+        },
+    };
+
+};
+
+struct StringList
 {
     u64 crc;
     char const *replacement;
-} stringList;
+};
 
-/* Function ptr to dread's crc function. */
-u64 (*crc64)(char const *str, u64 size) = NULL;
-
-stringList *g_stringList = NULL;
+StringList *g_stringList = nullptr;
 size_t g_stringListSize = 0;
 
-CStrId* g_stringBank = NULL;
+CStrId* g_stringBank = nullptr;
 
 /** Create a string instance */
-void (*create_string_instance) (CStrId* value, const char* str, uint len, u64 crc, bool storeInPool) = NULL;
+using CreateStringInstanceFn = void (*)(CStrId* value, const char* str, uint len, u64 crc, bool storeInPool);
+CreateStringInstanceFn create_string_instance = nullptr;
 
 /* Takes in a pointer to string and if found in the list, is replaced with the desired string. */
 void replaceString(const char **str)
@@ -37,14 +65,14 @@ void replaceString(const char **str)
 }
 
 /* Allocates a buffer and reads from the specified file.
- * If the path is not a valid file entry, immediately returns NULL.
- * Caller is expected to free any non-NULL return value. */
+ * If the path is not a valid file entry, immediately returns nullptr.
+ * Caller is expected to free any non-null return value. */
 void* odr::romfs::OpenAndReadFile(const char *path)
 {
     nn::fs::DirectoryEntryType entryType;
     nn::fs::GetEntryType(&entryType, path);
     if (entryType != nn::fs::DirectoryEntryType_File) {
-        return NULL;
+        return nullptr;
     }
 
     long int size;
@@ -64,7 +92,7 @@ void populateStringReplacementList()
 {
     /* Read contents of replacements.json in romfs. Allocates a heap buffer for the file contents and returns it. */
     char *fileBuf = (char *)odr::romfs::OpenAndReadFile("rom:/replacements.json");
-    if (fileBuf == NULL) {
+    if (fileBuf == nullptr) {
         const char* msg = "[LogWarn/0] rom:/replacements.json does not exist!";
         svcOutputDebugString(msg, strlen(msg));
         return;
@@ -72,7 +100,7 @@ void populateStringReplacementList()
 
     /* Parse json from file buffer. */
     cJSON *json = cJSON_Parse(fileBuf);
-    if(json == NULL)
+    if(json == nullptr)
         return;
 
     /* Get the "replacements" object within the json. */
@@ -82,7 +110,7 @@ void populateStringReplacementList()
     g_stringListSize = cJSON_GetArraySize(replacementList);
 
     /* Allocate space for the list of strings to replace. */
-    g_stringList = (stringList *)malloc(g_stringListSize * sizeof(stringList));
+    g_stringList = (StringList *)malloc(g_stringListSize * sizeof(StringList));
 
     size_t i = 0;
     const cJSON *itemObject;
@@ -126,7 +154,7 @@ void populateStringReplacementList()
 void setSeedSaveProfile()
 {
     char *seedHash = (char*)odr::romfs::OpenAndReadFile("rom:/RDVHASH");
-    if (seedHash == NULL) {
+    if (seedHash == nullptr) {
         const char* msg = "[LogWarn/0] rom:/RDVHASH does not exist!";
         svcOutputDebugString(msg, strlen(msg));
         return;
@@ -166,8 +194,8 @@ HOOK_DEFINE_TRAMPOLINE(ForceRomfs) {
     /* Define the callback for when the function is called. Don't forget to make it static and name it Callback. */
     static void Callback(void *CFilePathStrIdOut, const char *path, u8 flags) {
 
-        /* Just in case the path is NULL, pass it down to the real implementation, since we don't support replacing NULL paths anyway. */
-        if(path == NULL)
+        /* Just in case the path is nullptr, pass it down to the real implementation, since we don't support replacing null paths anyway. */
+        if(path == nullptr)
         {
             Orig(CFilePathStrIdOut, path, flags);
             return;
@@ -190,10 +218,10 @@ HOOK_DEFINE_TRAMPOLINE(RomMounted) {
     }
 };
 
-void odr::romfs::InstallHooks(functionOffsets* offsets) {
+void odr::romfs::InstallHooks() {
+    const Offsets& offsets = OFFSETS.Get();
     RomMounted::InstallAtFuncPtr(nn::fs::MountRom);
-    ForceRomfs::InstallAtOffset(offsets->CFilePathStrIdCtor);
-    crc64 = (u64 (*)(char const *, u64))exl::util::modules::GetTargetOffset(offsets->crc64);
-    create_string_instance = (void (*)(CStrId* value, const char* str, uint len, u64 crc, bool storeInPool)) exl::util::modules::GetTargetOffset(offsets->FindOrCreateStringInstance);
-    g_stringBank = (CStrId*)exl::util::modules::GetTargetOffset(offsets->StaticStringBank);
+    ForceRomfs::InstallAtOffset(offsets.CFilePathStrIdCtor);
+    create_string_instance = odr::game::Resolve<CreateStringInstanceFn>(offsets.FindOrCreateStringInstance);
+    g_stringBank = odr::game::Resolve<CStrId*>(offsets.StaticStringBank);
 }

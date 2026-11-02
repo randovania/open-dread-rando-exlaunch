@@ -247,7 +247,7 @@ void RemoteApi::ParseClientPacket() {
     int payloadLength = 0;
     int remainingBytes = 0;
     ssize_t receivedBytes = -1;
-    char* placeForNextPart = NULL;
+    char* placeForNextPart = nullptr;
 
     switch (RecvBuffer.data()[0]) {
     case PACKET_HANDSHAKE:

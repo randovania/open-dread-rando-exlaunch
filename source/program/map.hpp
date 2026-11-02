@@ -2,7 +2,6 @@
 
 #include "lib.hpp"
 #include "lua-5.1.5/src/lua.hpp"
-#include "dread_types.hpp"
 
 namespace odr::map {
 
@@ -13,7 +12,7 @@ namespace odr::map {
 		TELEPORTER_NET = 2,
 	};
 
-	void InstallFunctions(const functionOffsets* offsets);
+	void InstallFunctions();
 	void InstallLuaLibrary(lua_State* L);
 
 	/** OdrMap.MarkMapTutoDone(type) -> bool. Marks a map tutorial (EMapTutoType) as already shown. */
