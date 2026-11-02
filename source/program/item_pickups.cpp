@@ -3,12 +3,39 @@
 #include "lib.hpp"
 #include "lib/util/modules.hpp"
 #include "lua_helper.hpp"
+#include "offsets.hpp"
 
 namespace odr::pickups {
 
+	struct Offsets {
+		/** Called when the player first collides with a Pickup item. */
+		ptrdiff_t OnCollectPickup;
+		/** Called by the CPickableItemComponent class to play the appropriate sound for collecting a pickup. */
+		ptrdiff_t PlayPickupSound;
+		/** Called by the CPickableItemComponent class to show a pop-up dialog with a message for a newly-collected pickup. */
+		ptrdiff_t ShowItemPickupMessage;
+		/** Plays a sound effect with specific flags and a callback function that is invoked when the sound finishes playing. */
+		ptrdiff_t PlaySoundWithCallback;
+	};
+
+	static constexpr offsets::Versioned<Offsets> OFFSETS = {
+		.v1_0_0 = {
+			.OnCollectPickup = 0x9ce5c8,
+			.PlayPickupSound = 0x9cee64,
+			.ShowItemPickupMessage = 0xb5395c,
+			.PlaySoundWithCallback = 0xf975f8,
+		},
+		.v2_1_0 = {
+			.OnCollectPickup = 0x9d0e28,
+			.PlayPickupSound = 0x9d16c4,
+			.ShowItemPickupMessage = 0xb5fd9c,
+			.PlaySoundWithCallback = 0xfd90d8,
+		},
+	};
+
 	static const luaL_Reg luaLibrary[] = {
 		{"SetItemPopupsEnabled", SetItemPopupsEnabled},
-		{NULL, NULL},
+		{nullptr, nullptr},
 	};
 
 	static void QueueAsyncPopup(const char* message);
@@ -17,7 +44,7 @@ namespace odr::pickups {
 	static bool disableItemPopups = false;
 	static bool nextPopupIsAsync = false;
 	static bool hookNextSoundCallback = false;
-	static SoundCallbackFunction hookedCallback = NULL;
+	static SoundCallbackFunction hookedCallback = nullptr;
 
 	/**
 	 * Hooks the function that is called by CPickableItemComponent when the player picks up an item.
@@ -62,14 +89,14 @@ namespace odr::pickups {
 				nextPopupIsAsync = false;
 
 				// Show the pickup message at the top of the screen (like incoming multiworld items)
-				if (pickupMessage != NULL) {
+				if (pickupMessage != nullptr) {
 					const char* pickupMessageText = pickupMessage->value->string.str;
 
 					QueueAsyncPopup(pickupMessageText);
 				}
 
 				// Make sure to call the "after picked up" callback!
-				if (callbackInfo != NULL) {
+				if (callbackInfo != nullptr) {
 					// Dread calls the callback with values of "0.0, 0.0, 1.0f, 1.0f" in the vanilla game
 					callbackInfo->function(callbackInfo->receiver, 0.0, 0.0, 1.0f, 1.0f);
 				}
@@ -108,11 +135,12 @@ namespace odr::pickups {
 
 };
 
-void odr::pickups::InstallHooks(const functionOffsets* offsets) {
-	OnCollectPickup::InstallAtOffset(offsets->OnCollectPickup);
-	PlayPickupSound::InstallAtOffset(offsets->PlayPickupSound);
-    ShowItemPickupMessage::InstallAtOffset(offsets->ShowItemPickupMessage);
-	PlaySoundWithCallback::InstallAtOffset(offsets->PlaySoundWithCallback);
+void odr::pickups::InstallHooks() {
+	const Offsets& offsets = OFFSETS.Get();
+	OnCollectPickup::InstallAtOffset(offsets.OnCollectPickup);
+	PlayPickupSound::InstallAtOffset(offsets.PlayPickupSound);
+	ShowItemPickupMessage::InstallAtOffset(offsets.ShowItemPickupMessage);
+	PlaySoundWithCallback::InstallAtOffset(offsets.PlaySoundWithCallback);
 }
 
 void odr::pickups::InstallLuaLibrary(lua_State* L) {
@@ -133,9 +161,9 @@ void odr::pickups::QueueAsyncPopup(const char* message) {
 }
 
 void odr::pickups::SoundCallbackHook(void* ptr1, void* ptr2, u32 param1, u32 param2) {
-	if (hookedCallback != NULL) {
+	if (hookedCallback != nullptr) {
 		hookedCallback(ptr1, ptr2, param1, param2);
-		hookedCallback = NULL;
+		hookedCallback = nullptr;
 	}
 
 	// After half a second, call the "PlayCurrentEnvironmentMusic" function to restore music after an item pickup sound plays.

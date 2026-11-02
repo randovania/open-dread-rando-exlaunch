@@ -1,10 +1,22 @@
 #include "debug_hooks.hpp"
 
+#include "offsets.hpp"
+
 namespace odr::debug {
+
+	struct Offsets {
+		/** The lua_CFunction for `Game.LogWarn`, which is stubbed out in vanilla Dread. */
+		ptrdiff_t LogWarn;
+	};
+
+	static constexpr offsets::Versioned<Offsets> OFFSETS = {
+		.v1_0_0 = { .LogWarn = 0x1052a70 },
+		.v2_1_0 = { .LogWarn = 0x1094820 },
+	};
 
 	static const luaL_Reg luaLibrary[] = {
 		{"SetLoggingEnabled", odr::debug::SetLoggingEnabled},
-		{NULL, NULL},
+		{nullptr, nullptr},
 	};
 
 	static bool loggingEnabled = false;
@@ -34,8 +46,8 @@ namespace odr::debug {
 
 };
 
-void odr::debug::InstallHooks(functionOffsets* offsets)  {
-	LogWarn::InstallAtOffset(offsets->LogWarn);
+void odr::debug::InstallHooks() {
+	LogWarn::InstallAtOffset(OFFSETS.Get().LogWarn);
 }
 
 void odr::debug::InstallLuaLibrary(lua_State* L) {

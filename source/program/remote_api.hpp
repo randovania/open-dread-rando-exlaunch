@@ -4,7 +4,7 @@
 #include <array>
 #include "lua-5.1.5/src/lua.hpp"
 
-typedef std::unique_ptr<std::vector<u8>> PacketBuffer;
+using PacketBuffer = std::unique_ptr<std::vector<u8>>;
 using SendBuffer = std::vector<PacketBuffer>;
 
 // Client's interest. e.g. logging is only forwarded to client if it was set in handshake

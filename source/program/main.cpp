@@ -11,9 +11,28 @@
 #include "romfs.hpp"
 #include "map.hpp"
 #include "sound.hpp"
+#include "game_functions.hpp"
+#include "offsets.hpp"
+
+struct MainOffsets {
+    ptrdiff_t luaRegisterGlobals;
+    ptrdiff_t lua_pcall;
+};
+
+static constexpr odr::offsets::Versioned<MainOffsets> MAIN_OFFSETS = {
+    .v1_0_0 = {
+        .luaRegisterGlobals = 0x106ce90,
+        .lua_pcall = 0x1061bc0,
+    },
+    .v2_1_0 = {
+        .luaRegisterGlobals = 0x010aed50,
+        .lua_pcall = 0x010a3a80,
+    },
+};
 
 /* The main executable's pcall, so we get proper error handling. */
-int (*exefs_lua_pcall) (lua_State *L, int nargs, int nresults, int errfunc) = NULL;
+using LuaPcallFn = int (*)(lua_State *L, int nargs, int nresults, int errfunc);
+LuaPcallFn exefs_lua_pcall = nullptr;
 
 void multiworld_schedule_update(lua_State* L) {
     lua_getglobal(L, "Game");
@@ -158,7 +177,7 @@ static const luaL_Reg multiworld_lib[] = {
   {"SendReceivedPickups", recv_pickups_send},
   {"SendNewGameState", new_game_state_send},
   {"Connected", is_connected},
-  {NULL, NULL}
+  {nullptr, nullptr}
 };
 
 /* Hook asdf */
@@ -191,122 +210,29 @@ HOOK_DEFINE_TRAMPOLINE(LuaRegisterGlobals) {
     }
 };
 
-/* Handle version differences */
-void getVersionOffsets(functionOffsets *offsets)
-{
-    nn::oe::DisplayVersion dispVer;
-    nn::oe::GetDisplayVersion(&dispVer);
-
-    if(strcmp(dispVer.displayVersion, "2.1.0") == 0)
-    {
-        offsets->crc64 = 0x1570;
-        offsets->CFilePathStrIdCtor = 0x166C8;
-        offsets->luaRegisterGlobals = 0x010aed50;
-        offsets->lua_pcall = 0x010a3a80;
-        offsets->LogWarn = 0x1094820;
-        offsets->CallFunctionWithArguments = 0x790; // wow that's early
-
-        // Pickups
-        offsets->OnCollectPickup = 0x9d0e28;
-        offsets->PlayPickupSound = 0x9d16c4;
-        offsets->ShowItemPickupMessage = 0xb5fd9c;
-
-        // Audio
-        offsets->PlaySoundWithCallback = 0xfd90d8;
-        offsets->SoundManagerSlot = 0x1cbafd0;
-        offsets->PauseSoundChannels = 0x108464;
-
-        // String bank
-        offsets->StaticStringBank = 0x1d552d0;
-        offsets->FindOrCreateStringInstance = 0x406dc;
-
-        // Map
-        offsets->GetMapManager = 0xe8d8b0;
-        offsets->AddDoneMapTuto = 0xea6314;
-
-        // Blackboard
-        offsets->GameGlobalSlot = 0x1cba088;
-        offsets->HashString = 0x3d4;
-        offsets->BlackboardGetOrCreateSection = 0x10472e0;
-        offsets->BlackboardSectionGetVector3D = 0x395d3c;
-        offsets->BlackboardSectionSetProp = 0x332c80;
-        offsets->BlackboardBuildPropKey = 0xae9a10;
-        offsets->BlackboardKeyPrefixSlot = 0x1cba090;
-        offsets->StringPoolSlot = 0x1cba068;
-        offsets->PropLastPlayerPosSlot = 0x1d09dc8;
-
-        // Teleporter
-        offsets->SyncTeleporterPairs = 0xb422a8;
-        offsets->GrowMapIconTable = 0xb48944;
-    }
-    else /* 1.0.0 - 2.0.0 */
-    {
-        offsets->crc64 = 0x1570;
-        offsets->CFilePathStrIdCtor = 0x16624;
-        offsets->luaRegisterGlobals = 0x106ce90;
-        offsets->lua_pcall = 0x1061bc0;
-        offsets->LogWarn = 0x1052a70;
-        offsets->CallFunctionWithArguments = 0x790;
-
-        // Pickups
-        offsets->OnCollectPickup = 0x9ce5c8;
-        offsets->PlayPickupSound = 0x9cee64;
-        offsets->ShowItemPickupMessage = 0xb5395c;
-
-        // Audio
-        offsets->PlaySoundWithCallback = 0xf975f8;
-        offsets->SoundManagerSlot = 0x1c635f8;
-        offsets->PauseSoundChannels = 0x108244;
-
-        // String bank
-        offsets->StaticStringBank = 0x1cfc2d0;
-        offsets->FindOrCreateStringInstance = 0x4063c;
-
-        // Map
-        offsets->GetMapManager = 0xe4f410;
-        offsets->AddDoneMapTuto = 0xe67dc8;
-
-        // Blackboard
-        offsets->GameGlobalSlot = 0x1c626b8;
-        offsets->HashString = 0x3d4;
-        offsets->BlackboardGetOrCreateSection = 0x10057a0;
-        offsets->BlackboardSectionGetVector3D = 0x3954bc;
-        offsets->BlackboardSectionSetProp = 0x332544;
-        offsets->BlackboardBuildPropKey = 0xae6c10;
-        offsets->BlackboardKeyPrefixSlot = 0x1c626c0;
-        offsets->StringPoolSlot = 0x1c62698;
-        offsets->PropLastPlayerPosSlot = 0x1cb22b0;
-
-        // Teleporter
-        offsets->SyncTeleporterPairs = 0xb3b7e8;
-        offsets->GrowMapIconTable = 0xb41e70;
-    }
-}
-
 extern "C" void exl_main(void* x0, void* x1)
 {
-    functionOffsets offsets;
     /* Setup hooking enviroment. */
     exl::hook::Initialize();
 
-    getVersionOffsets(&offsets);
+    /* Shared game functions, needed by the other modules. */
+    odr::game::InstallFunctions();
 
-    /* Install the hook at the provided function pointer. Function type is checked against the callback function. */
-    /* Hook functions we care about */
+    /* Hook functions we care about. Each module installs from its own offsets. */
+    const MainOffsets& offsets = MAIN_OFFSETS.Get();
     LuaRegisterGlobals::InstallAtOffset(offsets.luaRegisterGlobals);
-    odr::debug::InstallHooks(&offsets);
-    odr::lua::InstallFunctions(&offsets);
-    odr::pickups::InstallHooks(&offsets);
-    odr::romfs::InstallHooks(&offsets);
-    odr::map::InstallFunctions(&offsets);
-    odr::sound::InstallFunctions(&offsets);
+    odr::debug::InstallHooks();
+    odr::lua::InstallFunctions();
+    odr::pickups::InstallHooks();
+    odr::romfs::InstallHooks();
+    odr::map::InstallFunctions();
+    odr::sound::InstallFunctions();
 
     /* Alternative install funcs: */
     /* InstallAtPtr takes an absolute address as a uintptr_t. */
     /* InstallAtOffset takes an offset into the main module. */
 
-    /* Get the address of dread's crc64 function */
-    exefs_lua_pcall = (int (*) (lua_State *L, int nargs, int nresults, int errfunc)) exl::util::modules::GetTargetOffset(offsets.lua_pcall);
+    exefs_lua_pcall = odr::game::Resolve<LuaPcallFn>(offsets.lua_pcall);
 }
 
 extern "C" NORETURN void exl_exception_entry()
