@@ -4,7 +4,7 @@
 #include "dread_types.hpp"
 
 namespace odr::romfs {
-    void InstallHooks(functionOffsets* offsets);
+    void InstallHooks();
     void* OpenAndReadFile(const char* path);
 
     /** The offset of "profile0" in the string bank. "profile1" and "profile2" immediately proceed. */

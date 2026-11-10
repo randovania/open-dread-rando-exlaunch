@@ -4,13 +4,12 @@
 
 #include "lib/nx/kernel/svc.h"
 #include "lua-5.1.5/src/lua.hpp"
-#include "dread_types.hpp"
 
 namespace odr::lua {
 
-	typedef bool (*CallFunctionWithArgumentsFn)(const char *functionName, const char *argumentTypes, ...);
+	using CallFunctionWithArgumentsFn = bool (*)(const char *functionName, const char *argumentTypes, ...);
 
-	void InstallFunctions(functionOffsets* offsets);
+	void InstallFunctions();
 	CallFunctionWithArgumentsFn GetCallFunctionWithArgumentsPtr();
 
 	/**
@@ -25,7 +24,7 @@ namespace odr::lua {
 	bool CallFunctionWithArguments(const char* functionName, const char* argumentTypes, Params&&... params) {
 		CallFunctionWithArgumentsFn callFunctionWithArgumentsPtr = GetCallFunctionWithArgumentsPtr();
 
-		if (callFunctionWithArgumentsPtr == NULL) {
+		if (callFunctionWithArgumentsPtr == nullptr) {
 			svcOutputDebugString("CallFunctionWithArguments could not be found!", 45);
 			return false;
 		}
