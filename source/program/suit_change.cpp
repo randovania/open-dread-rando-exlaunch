@@ -1,5 +1,6 @@
 #include "suit_change.hpp"
 
+#include <memory>
 #include "lib.hpp"
 #include "dread_types.hpp"
 #include "game_functions.hpp"
@@ -14,7 +15,7 @@ namespace odr::suit_change {
 		ptrdiff_t ChangeModel;
 		/** Adds a model to a material effect. void(effect, renderModel, matchMaterials). */
 		ptrdiff_t AttachMaterialFx;
-		/** Removes a model's current instance from a material effect. void(effect, renderModel). */
+		/** Removes a model's current model data from a material effect. void(effect, renderModel). */
 		ptrdiff_t DetachMaterialFx;
 	};
 
@@ -127,8 +128,6 @@ namespace odr::suit_change {
 	static AttachMaterialFxFn attachMaterialFx = nullptr;
 	static DetachMaterialFxFn detachMaterialFx = nullptr;
 
-	static const u32 MAX_EFFECTS = 64;
-
 	static CModelData* GetModelData(CRenderModel* renderModel) {
 		if (renderModel == nullptr || renderModel->node == nullptr) {
 			return nullptr;
@@ -178,7 +177,7 @@ namespace odr::suit_change {
 
 			// Take every material effect that draws on the old model data off the model.
 			// Remember them, so they can be put back after the change.
-			CEffect* detached[MAX_EFFECTS];
+			auto detached = std::make_unique<CEffect*[]>(fxComponent->effectCount);
 			u32 detachedCount = 0;
 			for (u32 i = 0; i < fxComponent->effectCount; i++) {
 				CEffect* effect = fxComponent->effects[i].effect;
@@ -186,9 +185,7 @@ namespace odr::suit_change {
 					continue;
 				}
 				detachMaterialFx(effect, renderModel);
-				if (detachedCount < MAX_EFFECTS) {
-					detached[detachedCount++] = effect;
-				}
+				detached[detachedCount++] = effect;
 			}
 
 			// The original function changes the model
