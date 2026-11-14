@@ -163,14 +163,14 @@ namespace odr::suit_change {
 	 * back on the new one afterwards.
 	 */
 	HOOK_DEFINE_TRAMPOLINE(ChangeModel) {
-		static u64 Callback(CModelUpdaterComponent* modelUpdater, void* modelEntry) {
+		static bool Callback(CModelUpdaterComponent* modelUpdater, void* modelEntry) {
 			// The actor this model updater belongs to (Samus) and the actor's FX component, which keeps every effect it plays
 			CActor* actor = modelUpdater->actor;
 			CFxComponent* fxComponent = actor != nullptr ? actor->fxComponent : nullptr;
 			// The render model stays the same object; the model data inside it is what effects draw on
 			CRenderModel* renderModel = modelUpdater->renderModel;
 			CModelData* oldModelData = GetModelData(renderModel);
-			if (fxComponent == nullptr || oldModelData == nullptr) {
+			if (fxComponent == nullptr || fxComponent->effectCount == 0 || oldModelData == nullptr) {
 				// No effects or no model yet, so nothing can point at the old model
 				return Orig(modelUpdater, modelEntry);
 			}
@@ -178,7 +178,7 @@ namespace odr::suit_change {
 			// Take every material effect that draws on the old model data off the model.
 			// Remember them, so they can be put back after the change.
 			auto detached = std::make_unique<CEffect*[]>(fxComponent->effectCount);
-			u32 detachedCount = 0;
+			int detachedCount = 0;
 			for (u32 i = 0; i < fxComponent->effectCount; i++) {
 				CEffect* effect = fxComponent->effects[i].effect;
 				if (effect == nullptr || !EffectUsesModelData(effect, oldModelData)) {
@@ -189,7 +189,7 @@ namespace odr::suit_change {
 			}
 
 			// The original function changes the model
-			u64 result = Orig(modelUpdater, modelEntry);
+			bool result = Orig(modelUpdater, modelEntry);
 
 			// Put the effects back on the new model data, like the game does when it starts an effect
 			renderModel = modelUpdater->renderModel; // defensive re-read
@@ -198,7 +198,7 @@ namespace odr::suit_change {
 				// The new model isn't ready to be drawn. Should never happen (safety guard)
 				return result;
 			}
-			for (u32 i = 0; i < detachedCount; i++) {
+			for (int i = 0; i < detachedCount; i++) {
 				attachMaterialFx(detached[i], renderModel, 1);
 			}
 			return result;
