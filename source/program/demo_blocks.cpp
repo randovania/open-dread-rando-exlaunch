@@ -18,8 +18,8 @@ namespace odr::demo_blocks {
         collision layer, which may create a race condition against an active PB. Adding this guard
         seems to resolve the inconsistency. */
     HOOK_DEFINE_TRAMPOLINE(CDemolitionBlockLifeComponent_OnHit) {
-        static int Callback(uint* oLIFE, uint* hit) {
-            if ((oLIFE[144] & hit[45]) == 0) { // oLife->eDamageSources at 0x240, hit->damageFlags at 0xb4
+        static int Callback(CDemolitionBlockLifeComponent* oLIFE, SHit* hit) {
+            if ((oLIFE->eDamageSources & hit->eDamageSources) == 0) { // oLife->eDamageSources at 0x240, hit->damageFlags at 0xb4
                 return 0;
             }
 
