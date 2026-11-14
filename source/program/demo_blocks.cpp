@@ -19,7 +19,7 @@ namespace odr::demo_blocks {
         seems to resolve the inconsistency. */
     HOOK_DEFINE_TRAMPOLINE(CDemolitionBlockLifeComponent_OnHit) {
         static int Callback(CDemolitionBlockLifeComponent* oLIFE, SHit* hit) {
-            if ((oLIFE->eDamageSources & hit->eDamageSources) == 0) { // oLife->eDamageSources at 0x240, hit->damageFlags at 0xb4
+            if ((oLIFE->eDamageSources & hit->eDamageSources) == 0) {
                 return 0;
             }
 
