@@ -6,6 +6,7 @@
 #include "lua-5.1.5/src/lua.hpp"
 #include "dread_types.hpp"
 #include "debug_hooks.hpp"
+#include "demo_blocks.hpp"
 #include "lua_helper.hpp"
 #include "item_pickups.hpp"
 #include "romfs.hpp"
@@ -223,6 +224,7 @@ extern "C" void exl_main(void* x0, void* x1)
     const MainOffsets& offsets = MAIN_OFFSETS.Get();
     LuaRegisterGlobals::InstallAtOffset(offsets.luaRegisterGlobals);
     odr::debug::InstallHooks();
+    odr::demo_blocks::InstallFunctions();
     odr::lua::InstallFunctions();
     odr::pickups::InstallHooks();
     odr::romfs::InstallHooks();
